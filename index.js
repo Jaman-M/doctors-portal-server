@@ -27,6 +27,28 @@ async function run(){
             res.send(services);
         });
 
+        app.get('/available', async(req, res) =>{
+          const date = req.query.date;
+          // step 1: get all services
+
+          const services = await serviceCollection.find().toArray();
+
+          // step 2: get the booking of the day
+          const query = {date: date};
+          const bookings = await bookingCollection.find(query).toArray();
+
+          // step 3: for each service find bookings for that service
+          services.forEach(service => {
+            const serviceBookings = bookings.filter(b => b.treatment === service.name);
+            const booked = serviceBookings.map(s => s.slot);
+            const available = service.slots.filter(s=>!booked.includes(s));
+            service.available = available;
+            // service.booked = serviceBookings.map(s => s.slot);
+          })
+
+          res.send(services);
+        })
+
         /**
          * API naming convention
          * app.get('/booking) // get all bookings . or get more than one or by filer
