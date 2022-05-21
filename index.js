@@ -19,6 +19,7 @@ async function run(){
         // console.log('database connected');
         const serviceCollection = client.db('doctors-portal').collection('services');
         const bookingCollection = client.db('doctors-portal').collection('bookings');
+        const userCollection = client.db('doctors-portal').collection('users');
 
         app.get('/service', async(req,res) => {
             const query = {};
@@ -26,6 +27,18 @@ async function run(){
             const services = await cursor.toArray();
             res.send(services);
         });
+
+        app.put('/user/:email', async(req, res) =>{
+          const email = req.params.email;
+          const user = req.body;
+          const filter = {email: email};
+          const options = {upsert: true};
+          const updateDoc = {
+            $set: user,
+          };
+          const result = await userCollection.updateOne(filter, updateDoc, options);
+          res.send(result);
+        })
 
         // warnings:
         // This is not the proper way to query
@@ -63,7 +76,8 @@ async function run(){
          * app.get('/booking) // get all bookings . or get more than one or by filer
          * app.get('/booking/:id') // get a specific bookihn
          * app.get('/booking') // add a new booking
-         * app.patch('/booking/:id') // add a new booking
+         * app.patch('/booking/:id') // add a new booking/update
+         * app.put('/booking/:id') //update (if exists) or insert (if doesn't exists)
          * app.delete('/booking/:id') // add a new booking
          */
 
